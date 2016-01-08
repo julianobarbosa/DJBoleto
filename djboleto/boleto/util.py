@@ -4,7 +4,7 @@ from datetime import date
 # pacote PIL ou diretamente através dos nomes dos módulos 
 try:
     import Image, ImageDraw
-except ImportError,e:
+except ImportError as e:
     from PIL import Image, ImageDraw
 
 def modulo_10(num):
@@ -92,7 +92,7 @@ def fator_vencimento(data):
     ano = data[2]
     mes = data[1]
     dia = data[0]
-    tempo = abs(date(1997,10,07) - date(int(ano),int(mes),int(dia)))
+    tempo = abs(date(1997,10,7) - date(int(ano),int(mes),int(dia)))
     return tempo.days
 
 def formatar_numero(numero,loop,insert,tipo="geral"):
@@ -182,3 +182,5 @@ def gerar_codigo_barras(valor, posX=0, posY=0, height = 50):
             draw.line((posX,posY,posX,posY + height),'white')
         posX+=1
     return imagem
+
+
