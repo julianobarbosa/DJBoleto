@@ -8,7 +8,68 @@ from io import StringIO
 from djboleto.boleto.bancos import BoletoBancoDoBrasil, BoletoBancoReal,\
             BoletoBradesco, BoletoCaixaEconomica, BoletoCaixaEconomicaSIGCB
 
-def boleto_bb(request):           
+def boleto_itau(request):
+    dados = dict()
+
+    dados['nosso_numero'] = '87654'
+    dados['numero_documento'] = '27.030195.10'
+
+    #dados['data_vencimento'] = 'DD/MM/AAAA'                 # Informar data vencimento
+    dados['data_vencimento'] = (date.today() + timedelta(5)
+                               ).strftime("%d/%m/%Y")       # data vencimento demonstra￧￣o, data atual + 5 dias
+
+    dados['data_documento'] = date.today().strftime("%d/%m/%Y")
+    dados['data_processamento'] = date.today().strftime("%d/%m/%Y")
+    dados['valor_boleto'] = 1550.00
+    dados['taxa_boleto'] = 2.95
+
+    # Dados da sua conta - BANCO ITAU
+    dados['agencia'] = '9999'
+    dados['conta'] = '99999'
+
+    # Dados personalizados - BANCO DO BRASIL
+    dados['convenio'] = '7777777'
+    dados['contrato'] = '999999'
+    dados['carteira'] = '18'
+    dados['variacao_carteira'] = '-019'
+
+    # Informações do seu cliente
+    dados['sacado'] = 'Nome do seu Cliente'
+    dados['endereco1'] = 'Endereço do seu Cliente'
+    dados['endereco2'] = 'Cidade - Estado -  CEP: 00000-000'
+
+    # Informações para o cliente
+    dados['demonstrativo1'] = 'Pagamento de Compra na Loja Nonononono'
+    dados['demonstrativo2'] = """Mensalidade referente a nonon nonooon nononon """
+    dados['demonstrativo3'] = 'DJBoletos'
+
+    # Instruções para o Caixa
+    dados['instrucoes1'] = '- Sr. Caixa, cobrar multa de 2% após o vencimento'
+    dados['instrucoes2'] = '- Receber até 10 dias após o vencimento'
+    dados['instrucoes3'] = '- Em caso de dúvidas entre em contato conosco: falecom@flexsolutions.com.br '
+    dados['instrucoes4'] = '- Emitido pelo sistema DJBoletos '
+
+
+    # Dados opcionais de acordo com o banco ou cliente
+    dados['quantidade'] = '10'
+    dados['valor_unitario'] = '10'
+    dados['aceite'] = "N";
+    dados['especie'] = 'R$'
+    dados['especie_doc'] = 'DM'
+
+
+    # Deus Dados
+    dados['identificacao'] = ' DJBoletos '
+    dados['cpf_cnpj'] = ''
+    dados['endereco'] = 'Coloque o endereço da sua empresa aqui'
+    dados['cidade_uf'] = 'Goiania / GO'
+    dados['cedente'] = 'Flexsolutions Consultores Ltda.'
+
+    dados_resposta = BoletoBancoDoBrasil.get_dados(7,2,dados)
+
+    return render_to_response("boletos/bancoitau.html", dados_resposta)
+
+def boleto_bb(request):
     dados = dict()
 
     dados['nosso_numero'] = '87654'
@@ -67,7 +128,8 @@ def boleto_bb(request):
 
     dados_resposta = BoletoBancoDoBrasil.get_dados(7,2,dados)
 
-    return render_to_response("boletos/bancodobrasil.html", dados_resposta)    
+    return render_to_response("boletos/bancodobrasil.html", dados_resposta)    
+
 def boleto_real(request):
     dados = dict()
 

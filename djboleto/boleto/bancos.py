@@ -175,6 +175,172 @@ class BoletoBancoDoBrasil(Boleto):
                 return boleto
 
             
+class BoletoBancoItau(Boleto):
+
+    @staticmethod
+    def get_dados(formatconvenio,formatnnumero,dados):
+        """
+         Retorna dados do boleto
+        """
+        Boleto.get_dados(dados)
+
+        dados['codigobanco']= '341'
+        dados['nummoeda'] = '9'
+        dados['livre_zeros'] = '000000'
+
+        fator_vencimento = util.fator_vencimento(dados["data_vencimento"])
+        vtotal = "%.2f" %(float(dados['valor_boleto']+dados['taxa_boleto']))
+        valor = util.formatar_numero(str(vtotal),10,0,'valor')
+        agencia = util.formatar_numero(dados["agencia"],4,0)
+        conta = util.formatar_numero(dados["conta"],8,0)
+
+        boleto = dict()
+        boleto = dados
+        boleto['codigobancodv'] = util.gerar_codigo_banco(dados['codigobanco'])
+        boleto['agenciaconta'] = "%s-%s / %s-%s" %(agencia,util.modulo_11(agencia),conta,util.modulo_11(conta))
+        boleto['valor'] = vtotal.replace('.',',')
+
+        # Carteira 18 com Conv�nio de 8 d�gitos
+        if formatconvenio == 8:
+            convenio = util.formatar_numero(dados['convenio'],8,0,'convenio')
+
+            # Noss� numero de at� 9 d�gitos
+            nossonumero = util.formatar_numero(dados['nosso_numero'],9,0)
+            boleto['nossonumero'] = nossonumero
+            boleto['convenio'] = convenio
+
+            dv = util.modulo_11("%s%s%s%s%s%s%s%s"%(dados['codigobanco'],
+                                                    dados['nummoeda'],
+                                                    fator_vencimento,
+                                                    valor,
+                                                    dados['livre_zeros'],
+                                                    convenio,
+                                                    nossonumero,
+                                                    dados['carteira']))
+
+            linha = "%s%s%s%s%s%s%s%s%s" %(dados['codigobanco'],
+                                           dados['nummoeda'],
+                                           dv,
+                                           fator_vencimento,
+                                           valor,
+                                           dados['livre_zeros'],
+                                           convenio,
+                                           nossonumero,
+                                           dados['carteira'])
+            boleto['codigobarra'] = linha
+            boleto['linhadigitavel'] = util.montar_linha_digitavel(linha)
+
+            # Montando o nosso numero que aparecer� no boleto
+            nossonumero = "%s%s-%s" %(convenio,nossonumero, util.modulo_11("%s%s"%(convenio,nossonumero)))
+            boleto['nossonumeroformatado'] = nossonumero
+            return  boleto
+
+
+        # Carteira 18 com Conv�nio de 7 d�gitos
+        if formatconvenio == 7:
+            convenio = util.formatar_numero(dados['convenio'],7,0,'convenio')
+
+            # Noss� numero de at� 10 d�gitos
+            nossonumero = util.formatar_numero(dados['nosso_numero'],10,0)
+            boleto['convenio'] = convenio
+            boleto['nossonumero'] = nossonumero
+
+            dv = util.modulo_11("%s%s%s%s%s%s%s%s"%(dados['codigobanco'],
+                                                      dados['nummoeda'],
+                                                      fator_vencimento,
+                                                      valor,
+                                                      dados['livre_zeros'],
+                                                      convenio,
+                                                      nossonumero,
+                                                      dados['carteira']))
+
+
+            linha = "%s%s%s%s%s%s%s%s%s" %(dados['codigobanco'],
+                                           dados['nummoeda'],
+                                           dv,
+                                           fator_vencimento,
+                                           valor,
+                                           dados['livre_zeros'],
+                                           convenio,
+                                           nossonumero,
+                                           dados['carteira'])
+
+            boleto['codigobarra'] = linha
+            boleto['linhadigitavel'] = util.montar_linha_digitavel(linha)
+            # Montando o nosso numero que aparecer� no boleto
+            nossonumero = "%s%s" %(convenio,nossonumero)
+            boleto['nossonumeroformatado'] = nossonumero
+
+            return boleto
+
+        # Carteira 18 com Conv�nio de 6 d�gitos
+        if formatconvenio == 6:
+            convenio = util.formatar_numero(dados['convenio'],6,0,'convenio')
+            if formatnnumero == 1:
+                # Noss� numero de at� 5 d�gitos
+                nossonumero = util.formatar_numero(dados['nosso_numero'],5,0)
+                boleto['nossonumero'] = nossonumero
+                dv = util.modulo_11("%s%s%s%s%s%s%s%s%s"%(dados['codigobanco'],
+                                                          dados['nummoeda'],
+                                                          fator_vencimento,
+                                                          valor,
+                                                          convenio,
+                                                          nossonumero,
+                                                          agencia,
+                                                          conta,
+                                                          dados['carteira']))
+
+                linha = "%s%s%s%s%s%s%s%s%s%s" %( dados['codigobanco'],
+                                                  dados['nummoeda'],
+                                                  dv,
+                                                  fator_vencimento,
+                                                  valor,
+                                                  convenio,
+                                                  nossonumero,
+                                                  agencia,
+                                                  conta,
+                                                  dados['carteira'])
+                boleto['codigobarra'] = linha
+                boleto['linhadigitavel'] = util.montar_linha_digitavel(linha)
+                # montando o nosso numero que aparecer� no boleto
+                nossonumero = "%s%s-%s" %(convenio,
+                                          nossonumero,
+                                          util.modulo_11("%s%s" %(convenio,
+                                                                  nossonumero)))
+                boleto['nossonumeroformatado'] = nossonumero
+                return  boleto
+
+
+            if formatnnumero == 2:
+
+                # Nosso n�mero de at� 17 d�gitos
+
+                nservico = '21'
+                nossonumero = util.formatar_numero(dados['nosso_numero'],17,0)
+                boleto['nossonumero'] = nossonumero
+
+                dv = util.modulo_11("%s%s%s%s%s%s%s"%(dados['codigobanco'],
+                                                          dados['nummoeda'],
+                                                          fator_vencimento,
+                                                          valor,
+                                                          convenio,
+                                                          nossonumero,
+                                                          nservico))
+
+                linha = "%s%s%s%s%s%s%s%s" %(dados['codigobanco'],
+                                             dados['nummoeda'],
+                                             dv,
+                                             fator_vencimento,
+                                             valor,
+                                             convenio,
+                                             nossonumero,
+                                             nservico)
+                boleto['codigobarra'] = linha
+                boleto['linhadigitavel'] = util.montar_linha_digitavel(linha)
+                boleto['nossonumeroformatado'] = nossonumero
+                return boleto
+
+
 class BoletoBancoReal(Boleto):
         
     @staticmethod
